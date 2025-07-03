@@ -194,6 +194,15 @@ $payments = $stmt->fetchAll(PDO::FETCH_ASSOC);
     color: white;
     border: none;
 }
+
+.whatsapp-proof {
+    background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
 </style>
 
 <div class="container-fluid">
@@ -310,15 +319,27 @@ $payments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <?= formatRupiah($payment['total_harga']) ?>
                                 </td>
                                 <td>
-                                    <?php if (!empty($payment['nama_file']) && file_exists(__DIR__ . '/../../assets/uploads/bukti-transfer/' . $payment['nama_file'])): ?>
-                                        <a href="<?= BASE_URL ?>assets/uploads/bukti-transfer/<?= $payment['nama_file'] ?>" 
-                                           target="_blank" 
-                                           data-bs-toggle="tooltip" 
-                                           data-bs-title="Lihat Bukti Transfer">
-                                            <img src="<?= BASE_URL ?>assets/uploads/bukti-transfer/<?= $payment['nama_file'] ?>" 
-                                                 class="proof-image" 
-                                                 alt="Bukti Transfer">
-                                        </a>
+                                    <?php if (!empty($payment['nama_file'])): ?>
+                                        <?php if ($payment['nama_file'] === 'send thru whatsapp'): ?>
+                                            <span class="whatsapp-proof">
+                                                <i class="fab fa-whatsapp me-1"></i>
+                                                Via WhatsApp
+                                            </span>
+                                        <?php elseif (file_exists(__DIR__ . '/../../assets/uploads/bukti-transfer/' . $payment['nama_file'])): ?>
+                                            <a href="<?= BASE_URL ?>assets/uploads/bukti-transfer/<?= $payment['nama_file'] ?>" 
+                                               target="_blank" 
+                                               data-bs-toggle="tooltip" 
+                                               data-bs-title="Lihat Bukti Transfer">
+                                                <img src="<?= BASE_URL ?>assets/uploads/bukti-transfer/<?= $payment['nama_file'] ?>" 
+                                                     class="proof-image" 
+                                                     alt="Bukti Transfer">
+                                            </a>
+                                        <?php else: ?>
+                                            <span class="text-muted">
+                                                <i class="fas fa-exclamation-triangle me-1"></i>
+                                                File tidak ditemukan
+                                            </span>
+                                        <?php endif; ?>
                                     <?php else: ?>
                                         <span class="text-muted">
                                             <i class="fas fa-exclamation-triangle me-1"></i>
@@ -353,27 +374,18 @@ $payments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 </td>
                                 <td>
                                     <div class="btn-group-actions">
-                                        <?php if (!empty($payment['nama_file']) && file_exists(__DIR__ . '/../../assets/uploads/bukti-transfer/' . $payment['nama_file'])): ?>
-                                            <a href="verifikasi.php?id=<?= $payment['id'] ?>&bukti_id=<?= $payment['bukti_id'] ?>" 
-                                               class="btn btn-sm btn-verify btn-action" 
-                                               title="Verifikasi"
-                                               data-bs-toggle="tooltip">
-                                                <i class="fas fa-check"></i>
-                                            </a>
-                                            <a href="tolak.php?id=<?= $payment['id'] ?>&bukti_id=<?= $payment['bukti_id'] ?>" 
-                                               class="btn btn-sm btn-reject btn-action" 
-                                               title="Tolak"
-                                               data-bs-toggle="tooltip">
-                                                <i class="fas fa-times"></i>
-                                            </a>
-                                        <?php else: ?>
-                                            <button class="btn btn-sm btn-verify btn-action" disabled title="Bukti transfer belum tersedia">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-reject btn-action" disabled title="Bukti transfer belum tersedia">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        <?php endif; ?>
+                                        <a href="verifikasi.php?id=<?= $payment['id'] ?><?= !empty($payment['bukti_id']) ? '&bukti_id=' . $payment['bukti_id'] : '' ?>" 
+                                           class="btn btn-sm btn-verify btn-action" 
+                                           title="Verifikasi"
+                                           data-bs-toggle="tooltip">
+                                            <i class="fas fa-check"></i>
+                                        </a>
+                                        <a href="tolak.php?id=<?= $payment['id'] ?><?= !empty($payment['bukti_id']) ? '&bukti_id=' . $payment['bukti_id'] : '' ?>" 
+                                           class="btn btn-sm btn-reject btn-action" 
+                                           title="Tolak"
+                                           data-bs-toggle="tooltip">
+                                            <i class="fas fa-times"></i>
+                                        </a>
                                         <a href="<?= BASE_URL ?>admin/pesanan/detail.php?id=<?= $payment['id'] ?>" 
                                            class="btn btn-sm btn-detail btn-action" 
                                            title="Detail Pesanan"
@@ -498,7 +510,6 @@ $(document).ready(function() {
 
     // Confirm before verify/reject
     $('.btn-verify').on('click', function(e) {
-        if ($(this).is(':disabled')) return;
         e.preventDefault();
         const url = $(this).attr('href');
         Swal.fire({
@@ -518,7 +529,6 @@ $(document).ready(function() {
     });
 
     $('.btn-reject').on('click', function(e) {
-        if ($(this).is(':disabled')) return;
         e.preventDefault();
         const url = $(this).attr('href');
         Swal.fire({

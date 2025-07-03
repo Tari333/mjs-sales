@@ -877,7 +877,7 @@ $prefixlogo = '../';
                                             <th>Status</th>
                                             <td>
                                                 <span class="status-badge">
-                                                    Menunggu Pembayaran
+                                                    <?= $order['status_pembayaran'] ?>
                                                 </span>
                                             </td>
                                         </tr>
